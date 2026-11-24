@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 
 from .. import http
+from ..log import say
 from ..models import Business
 from ..text import domain_of, legal_form_from_name, normalize_phone, normalize_url
 from . import SourceResult
@@ -112,6 +113,7 @@ def fetch(municipalities: list[str] | None, segments: dict, cache_path: Path | N
             hit = cache.get(ck)
             if hit and (dt.date.today() - dt.date.fromisoformat(hit["date"])).days < refresh_days:
                 fresh += 1   # places change slowly: reuse a recent answer and spare the public servers
+                say(f"OSM {m or 'Finland'}/{key}: {len(hit['elements']):,} places (reused from {hit['date']})")
                 for el in hit["elements"]:
                     b = parse(el, m or "", segments)
                     if b:
@@ -123,8 +125,13 @@ def fetch(municipalities: list[str] | None, segments: dict, cache_path: Path | N
                 elements = (_overpass(build_query(m, {key: seg}), 90 if m else 260) or {}).get("elements", [])
                 cache[ck] = {"date": dt.date.today().isoformat(), "elements": elements}
                 down = 0
+                say(f"OSM {m or 'Finland'}/{key}: {len(elements):,} places")
+                if cache_path:   # keep each answer even if the run is stopped later
+                    cache_path.parent.mkdir(parents=True, exist_ok=True)
+                    cache_path.write_text(json.dumps(cache, ensure_ascii=False), encoding="utf-8")
             except http.FetchError as e:
                 down += 1
+                say(f"OSM {m or 'Finland'}/{key}: failed ({e})" + (", using the last good answer" if ck in cache else ""))
                 if ck in cache:
                     elements, stale = cache[ck]["elements"], stale + 1
                 else:

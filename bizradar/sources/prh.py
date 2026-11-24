@@ -10,6 +10,7 @@ from __future__ import annotations
 import concurrent.futures as cf
 
 from .. import http
+from ..log import say
 from ..models import Business
 from ..text import domain_of, normalize_url
 from . import SourceResult
@@ -110,13 +111,17 @@ def fetch(municipalities: list[str] | None, segments: dict) -> SourceResult:
             total = d.get("totalResults") or 0
             for p in range(2, min(-(-total // 100), 400) + 1):
                 more[ex.submit(_page, m, code, p)] = (m, code, seg)
-        for f in cf.as_completed(more):
+        say(f"PRH: {len(jobs)} industry codes queried, {len(more):,} more pages to fetch")
+        for n, f in enumerate(cf.as_completed(more), 1):
+            if n % 100 == 0:
+                say(f"PRH: {n:,}/{len(more):,} pages")
             m, code, seg = more[f]
             try:
                 take(f.result().get("companies", []), code, seg)
                 pages += 1
             except http.FetchError as e:
                 errors.append(f"{m or 'FI'}/{code}: {e}")
+    say(f"PRH: {len(res.items):,} companies from {pages:,} pages" + (f", {len(errors)} errors" if errors else ""))
     res.ok = pages > 0 and len(errors) <= pages
     res.error = "; ".join(errors[:3]) + (f" (+{len(errors) - 3} more)" if len(errors) > 3 else "")
     res.detail = f"{pages} pages, {'whole country' if not municipalities else f'{len(municipalities)} municipalities'}"

@@ -4,9 +4,11 @@ from __future__ import annotations
 import concurrent.futures as cf
 import datetime as dt
 import json
+import time
 from pathlib import Path
 
 from . import compliance, dashboard, enrich, geo, merge, score
+from .log import say
 from .sources import SourceResult, osm, prh
 
 ALL = {"all", "finland", "suomi", "koko suomi", ""}
@@ -61,11 +63,14 @@ def run(cfg: dict, root: Path, today: dt.date | None = None, only: set[str] | No
         geo.download(data_dir / "geo.json")
         g = geo.Geo(data_dir / "geo.json")
     query_area, want_munis, want_regions = area_spec(cfg, g)
+    say("Collecting: " + (", ".join(query_area) if query_area else "the whole country")
+        + f", {len(cfg['segments'])} kinds of business")
     results = collect(cfg, root, only, query_area)
     if results and not any(r.ok for r in results):
         raise RuntimeError("every source failed: " + "; ".join(f"{r.name}: {r.error}" for r in results))
     by = {r.name: r.items for r in results}
     leads, mstats = merge.merge(by.get("prh", []), by.get("osm", []))
+    say(f"Merged: {len(leads):,} businesses ({mstats['matched']:,} map places matched to a company)")
     funnel = {"companies": mstats["companies"], "places": mstats["places"], "matched": mstats["matched"],
               "merged": len(leads), "opted_out": 0, "expired": 0, "low_score": 0}
 
@@ -98,9 +103,12 @@ def run(cfg: dict, root: Path, today: dt.date | None = None, only: set[str] | No
     cache = enrich.SiteCache(private / "sites.json", ecfg.get("refresh_days", 30))
     guesses = enrich.DomainGuesses(data_dir / "domains.json")
     if read_sites and ecfg.get("enabled", True):
-        guesses.run(leads, ecfg.get("max_domain_guesses_per_run", 250))
+        # Website work gets a fixed time, so a run always finishes; the rest is read on the next run.
+        deadline = time.monotonic() + ecfg.get("max_minutes", 30) * 60
+        guesses.run(leads, ecfg.get("max_domain_guesses_per_run", 250), deadline)
         guesses.save()
-        cache.crawl(leads, ecfg.get("max_sites_per_run", 300), ecfg.get("max_pages_per_site", 4))
+        cache.crawl(leads, ecfg.get("max_sites_per_run", 300), ecfg.get("max_pages_per_site", 4), deadline)
+        cache.save()
     for b in leads:
         if b.domain:
             enrich.apply(b, cache.get(b.domain))

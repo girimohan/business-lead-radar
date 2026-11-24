@@ -199,3 +199,17 @@ def test_malformed_links_do_not_crash():
     assert domain_of("http://[broken-ipv6/page") == ""
     boom = enrich._safe(lambda b: 1 / 0, {"ok": False})
     assert boom(biz()) == {"ok": False}
+
+
+def test_website_work_stops_at_the_time_limit():
+    import time
+    from bizradar.enrich import _timed
+
+    def slow(x):
+        time.sleep(0.05 if x < 4 else 5)
+        return x * 2
+
+    t0 = time.monotonic()
+    got = dict(_timed(slow, list(range(8)), time.monotonic() + 1.0, "test", workers=8))
+    assert got == {0: 0, 1: 2, 2: 4, 3: 6}
+    assert time.monotonic() - t0 < 3

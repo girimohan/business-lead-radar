@@ -28,6 +28,7 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     env:
       RADAR_PASSPHRASE: ${{ secrets.RADAR_PASSPHRASE }}
+      PYTHONUNBUFFERED: "1"   # show progress lines as they happen
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -60,7 +61,9 @@ jobs:
           DASHBOARD_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
         run: python -m bizradar run
 
-      - run: python -m bizradar state save
+      - name: Encrypt this run's state (also when a run fails or is stopped, so the next one continues)
+        if: always()
+        run: python -m bizradar state save
       - name: Save this run's state (encrypted)
         if: always()
         uses: actions/cache/save@v4

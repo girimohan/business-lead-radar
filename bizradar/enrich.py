@@ -6,6 +6,7 @@ respected, and results are cached so a site is read at most once per `refresh_da
 from __future__ import annotations
 
 import concurrent.futures as cf
+import time
 import datetime as dt
 import html as htmllib
 import json
@@ -14,6 +15,7 @@ from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
 from . import http
+from .log import say
 from .models import Business, Email
 from .text import domain_of, fold, name_tokens, normalize_phone
 
@@ -201,6 +203,28 @@ def guess_site(b: Business) -> str:
     return ""
 
 
+def _timed(fn, items: list, deadline: float | None, label: str, workers: int = 16):
+    """(item, fn(item)) as they finish, with a progress line every 100; stops at `deadline` (time.monotonic()).
+    Whatever is left waits for the next run."""
+    if not items:
+        return
+    ex = cf.ThreadPoolExecutor(workers)
+    futs = {ex.submit(fn, x): x for x in items}
+    n = 0
+    try:
+        left = None if deadline is None else max(1.0, deadline - time.monotonic())
+        for f in cf.as_completed(futs, timeout=left):
+            n += 1
+            if n % 100 == 0:
+                say(f"{label}: {n:,}/{len(items):,}")
+            yield futs[f], f.result()
+    except cf.TimeoutError:
+        say(f"{label}: time limit reached after {n:,}/{len(items):,}; the rest waits for the next run")
+    finally:
+        ex.shutdown(wait=False, cancel_futures=True)
+    say(f"{label}: done, {n:,}/{len(items):,}")
+
+
 class DomainGuesses:
     """data/domains.json: business id -> guessed website or "" (no personal data)."""
 
@@ -212,12 +236,12 @@ class DomainGuesses:
             self.data = {}
         self.found = 0
 
-    def run(self, businesses: list[Business], budget: int) -> None:
+    def run(self, businesses: list[Business], budget: int, deadline: float | None = None) -> None:
         # Storefronts on the map first: those are the ones a "no website" claim would be made about.
         todo = sorted((b for b in businesses if not b.website and b.id not in self.data), key=lambda b: not b.osm_ref)[:budget]
-        with cf.ThreadPoolExecutor(16) as ex:
-            for b, url in zip(todo, ex.map(_safe(guess_site, ""), todo)):
-                self.data[b.id] = url
+        say(f"Websites: looking for {len(todo):,} businesses' sites by name")
+        for b, url in _timed(_safe(guess_site, ""), todo, deadline, "Website search"):
+            self.data[b.id] = url
         for b in businesses:
             if b.id in self.data and not b.website:
                 b.signals["site_searched"] = True
@@ -250,7 +274,7 @@ class SiteCache:
         age = (dt.date.today() - dt.date.fromisoformat(e["read"])).days
         return age < (self.refresh if e.get("ok") else 7)
 
-    def crawl(self, businesses: list[Business], max_sites: int, max_pages: int) -> None:
+    def crawl(self, businesses: list[Business], max_sites: int, max_pages: int, deadline: float | None = None) -> None:
         todo, seen = [], set()
         for b in businesses:
             if b.website and b.domain and b.domain not in seen:
@@ -262,12 +286,12 @@ class SiteCache:
         # Registered companies first: their published generic address may be emailed (917/2014 § 202).
         todo.sort(key=lambda b: (b.legal_form_source != "prh", not b.osm_ref))
         todo = todo[:max_sites]
-        with cf.ThreadPoolExecutor(16) as ex:
-            failed = {"read": dt.date.today().isoformat(), "ok": False, "emails": [], "phones": [], "form": "",
-                      "signals": {}, "instagram": "", "facebook": "", "pages": 0}
-            for b, entry in zip(todo, ex.map(_safe(lambda x: read_site(x, max_pages), failed), todo)):
-                self.data[b.domain] = entry
-                self.stats["read" if entry["ok"] else "failed"] += 1
+        say(f"Websites: reading {len(todo):,} sites ({self.stats['cached']:,} read recently)")
+        failed = {"read": dt.date.today().isoformat(), "ok": False, "emails": [], "phones": [], "form": "",
+                  "signals": {}, "instagram": "", "facebook": "", "pages": 0}
+        for b, entry in _timed(_safe(lambda x: read_site(x, max_pages), failed), todo, deadline, "Websites"):
+            self.data[b.domain] = entry
+            self.stats["read" if entry["ok"] else "failed"] += 1
 
     def get(self, domain: str) -> dict | None:
         return self.data.get(domain)

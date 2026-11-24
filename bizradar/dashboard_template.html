@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Business Lead Radar</title>
+<style>
+:root{
+  --paper:#F1EFEA; --panel:#FAF9F6; --ink:#1D1A16; --muted:#645D54; --line:#D6D0C6;
+  --accent:#1F5C8C; --accent-soft:#DCE7F0; --pine:#0B6B50; --pine-soft:#D5E9E0;
+  --amber:#9A5A00; --amber-soft:#F4E5C6; --slate-soft:#E5E1DA; --danger:#A3352B; --danger-soft:#F3DCD8;
+  --display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; --body:"Segoe UI",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --paper:#16140F; --panel:#1E1B16; --ink:#ECE7DF; --muted:#A79F94; --line:#38332B;
+  --accent:#7DB4E0; --accent-soft:#1D3243; --pine:#5FD1A7; --pine-soft:#173B30;
+  --amber:#F0B45A; --amber-soft:#3D2E12; --slate-soft:#2A2620; --danger:#F08A7E; --danger-soft:#43211D;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.5 var(--body)}
+a{color:var(--accent)}
+button,select,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+header.top{padding:28px 0 4px}
+h1{font:700 clamp(28px,4.2vw,42px)/1.05 var(--display);letter-spacing:-.01em;margin:0}
+.sub{color:var(--muted);margin:6px 0 0;max-width:72ch}
+.stats{display:flex;flex-wrap:wrap;gap:10px 28px;margin:18px 0 0}
+.stat b{display:block;font:700 26px/1.1 var(--display);font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:13.5px}
+nav.tabs{display:flex;flex-wrap:wrap;gap:4px;margin-top:20px;border-bottom:1px solid var(--line)}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;cursor:pointer;font-weight:500;color:var(--muted)}
+nav.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+nav.tabs .n{font-size:12.5px;margin-left:5px;padding:0 7px;border-radius:99px;background:var(--slate-soft)}
+.layout{display:grid;grid-template-columns:250px 1fr;gap:28px;padding:20px 0 60px}
+@media (max-width:820px){.layout{grid-template-columns:1fr;gap:12px}}
+aside h2{font:700 15px/1.2 var(--display);margin:18px 0 6px}
+aside h2:first-child{margin-top:0}
+.pick{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;background:none;border:0;border-radius:5px;padding:5px 8px;cursor:pointer}
+.pick:hover{background:var(--slate-soft)}
+.pick[aria-pressed=true]{background:var(--accent-soft);font-weight:600}
+.pick span:last-child{color:var(--muted);font-variant-numeric:tabular-nums}
+label.chk{display:flex;gap:8px;align-items:flex-start;padding:4px 8px;cursor:pointer}
+label.chk input{margin-top:4px;accent-color:var(--accent)}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.bar input[type=search]{flex:1 1 220px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.bar select{padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.count{color:var(--muted);font-size:13.5px;margin:0 0 6px}
+ol.leads{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+ol.leads>li{border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:50px 1fr auto;gap:14px;align-items:start;width:100%;padding:12px 4px;background:none;border:0;text-align:left;cursor:pointer}
+.row:hover{background:var(--panel)}
+.score{font:700 22px/1 var(--display);font-variant-numeric:tabular-nums;padding-top:2px}
+.title{font-weight:600;font-size:16px;line-height:1.3}
+.meta{color:var(--muted);font-size:13.5px;margin-top:2px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+.tag{font-size:12.5px;padding:1px 8px;border-radius:99px;background:var(--slate-soft)}
+.tag.good{background:var(--pine-soft);color:var(--pine)}
+.tag.mid{background:var(--accent-soft);color:var(--accent)}
+.tag.warn{background:var(--amber-soft);color:var(--amber)}
+.tag.new{background:var(--amber);color:var(--paper);font-weight:600}
+.state{font-size:13px;color:var(--muted);white-space:nowrap;padding-top:4px}
+.state.on{color:var(--pine);font-weight:600}
+.state.due{color:var(--amber);font-weight:600}
+.more{padding:2px 4px 22px 68px;display:grid;gap:14px}
+@media (max-width:600px){.more{padding-left:4px}.row{grid-template-columns:40px 1fr}.state{grid-column:2}}
+.more p{margin:0;max-width:78ch}
+.why{color:var(--muted);font-size:13.5px}
+table.ch{border-collapse:collapse;font-size:14px;max-width:82ch;width:100%}
+table.ch td{border-bottom:1px solid var(--line);padding:6px 8px;vertical-align:top}
+table.ch td:first-child{white-space:nowrap;font-weight:600;width:1%}
+.yes{color:var(--pine);font-weight:600}.no{color:var(--danger);font-weight:600}.maybe{color:var(--amber);font-weight:600}
+code{font:13.5px/1.4 ui-monospace,Consolas,monospace;background:var(--slate-soft);padding:1px 5px;border-radius:4px;word-break:break-all}
+.facts{font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 16px}
+.seg{display:flex;flex-wrap:wrap;gap:4px}
+.seg button{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:4px 12px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.draft{display:grid;gap:8px;max-width:80ch}
+.draft input,.draft textarea,.draft select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.draft textarea{min-height:260px;resize:vertical;line-height:1.45}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{display:inline-block;padding:7px 14px;border-radius:6px;border:1px solid var(--line);background:var(--panel);cursor:pointer;text-decoration:none;color:var(--ink);font-weight:500}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.btn.small{padding:3px 10px;font-size:13px}
+.track{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.track select{padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.track textarea{width:100%;max-width:80ch;min-height:52px;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.consent{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;max-width:80ch;display:grid;gap:8px}
+.consent input{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.empty{padding:40px 8px;color:var(--muted)}
+.notice{border-left:3px solid var(--amber);background:var(--amber-soft);padding:10px 14px;border-radius:0 6px 6px 0;max-width:82ch}
+.notice.stop{border-left-color:var(--danger);background:var(--danger-soft)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;max-width:82ch}
+.panel h3{font:700 17px/1.2 var(--display);margin:0 0 8px}
+.panel+.panel{margin-top:14px}
+table.src{border-collapse:collapse;font-size:14px;width:100%}
+table.src td,table.src th{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+table.src th{color:var(--muted);font-weight:500}
+.err{color:var(--danger)}
+footer{color:var(--muted);font-size:13px;padding:0 0 40px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.on{opacity:1}
+.stat.over b{color:#c2410c}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <h1>Business Lead Radar</h1>
+  <p class="sub">Small businesses across Finland that a Barmo product fits, and the lawful way to reach each one. Email is offered only where Finnish law allows it without consent; for sole traders, call or visit first and ask. Nothing is sent for you, and your tracker stays in this browser.</p>
+  <div class="stats" id="stats"></div>
+</header>
+<nav class="tabs" role="tablist" id="tabs">
+  <button role="tab" data-tab="leads" aria-selected="true">Leads</button>
+  <button role="tab" data-tab="follow" aria-selected="false">Follow-ups<span class="n" id="nfollow">0</span></button>
+  <button role="tab" data-tab="sent" aria-selected="false">Contacted<span class="n" id="nsent">0</span></button>
+  <button role="tab" data-tab="about" aria-selected="false">Rules, sources, sync</button>
+</nav>
+<div class="layout" id="main">
+  <aside id="side">
+    <h2>Kind of business</h2><div id="f-segment"></div>
+    <h2>Reach by</h2><div id="f-route"></div>
+    <h2>What fits</h2><div id="f-offer"></div>
+    <h2>Company form</h2><div id="f-form"></div>
+    <h2>Region</h2><div id="f-region"></div>
+    <h2>Municipality</h2><div id="f-muni"></div>
+    <h2>Show</h2>
+    <label class="chk"><input type="checkbox" id="f-new"> New since last run</label>
+  </aside>
+  <section>
+    <div class="bar">
+      <input type="search" id="q" placeholder="Search name, street, website" aria-label="Search">
+      <select id="sort" aria-label="Sort"><option value="score">Best first</option><option value="email">Email allowed first</option><option value="new">Newest first</option><option value="name">Name A-Z</option><option value="post">By postcode</option></select>
+    </div>
+    <p class="count" id="count"></p>
+    <ol class="leads" id="list"></ol>
+  </section>
+</div>
+<div class="layout" id="aboutview" hidden><div></div><section id="about"></section></div>
+<footer class="wrap" id="foot"></footer>
+</div>
+<div id="toast" role="status"></div>
+<script>
+const DATA = /*__DATA__*/null;
+if (DATA.compact) {   // the radar drops empty fields to keep a nationwide page small; put them back
+  const DEF = () => ({segment:"", business_id:"", legal_form:"unknown", legal_form_source:"", industry_code:"", industry:"",
+    other_names:[], street:"", postcode:"", city:"", municipality:"", region:"", lat:null, lon:null, website:"", domain:"",
+    phone:"", phone_source:"", emails:[], contact_form:"", instagram:"", facebook:"", opening_hours:"", registered:"",
+    signals:{}, provenance:[], osm_ref:"", channels:{}, score:0, reasons:[], offers:[], offer_why:{}, first_seen:""});
+  DATA.leads = DATA.leads.map(c => {
+    const b = Object.assign(DEF(), c);
+    b.channels = Object.fromEntries(Object.entries(c.channels || {}).map(([k, a]) =>
+      [k, Object.assign({allowed:!!a[0], to:a[1] || "", why:DATA.whys[a[2]] || ""}, a[3] ? {role_unlock:true} : {})]));
+    b.provenance = (c.provenance || []).map(p => ({field:p[0], source:p[1], ref:p[2] || ""}));
+    b.emails = (c.emails || []).map(e => Object.assign({kind:"generic", source_url:""}, e));
+    return b;
+  });
+}
+const BYID = new Map(DATA.leads.map(b => [b.id, b]));
+const STORE = "business-lead-radar:v1";
+const FORM = {oy:"Oy", ky:"Ky", ay:"Ay", osk:"Osuuskunta", other:"Other company", tmi:"Toiminimi", unknown:"Probably toiminimi"};
+const ROUTE = {email:"Email allowed", phone:"Phone", visit:"Visit", letter:"Letter only", none:"No route"};
+const CH = {email:"Email", phone:"Phone", visit:"Visit", letter:"Letter", form:"Contact form", sms:"SMS"};
+const STATUS = [["","Not contacted"],["emailed","Emailed"],["called","Called"],["visited","Visited"],["letter","Letter sent"],
+  ["replied","Replied / interested"],["meeting","Meeting booked"],["customer","Became a customer"],["no","Not interested"],["dnc","Do not contact again"]];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $ = id => document.getElementById(id);
+let tracker = {};
+try { tracker = JSON.parse(localStorage.getItem(STORE) || "{}"); } catch { tracker = {}; }
+const save = () => localStorage.setItem(STORE, JSON.stringify(tracker));
+const today = new Date().toISOString().slice(0, 10);
+const daysSince = d => d ? Math.floor((Date.parse(today) - Date.parse(d)) / 864e5) : null;
+const FOLLOW = DATA.follow_up_days || 10;
+const state = {tab:"leads", segment:null, route:null, offer:null, form:null, region:null, muni:null, open:new Set(), view:{}};
+const LIMIT = DATA.email_daily_limit || 25;
+const emailsToday = () => Object.values(tracker).reduce((n, t) => n + (t.log || []).filter(e => e.date === today && e.channel === "email").length, 0);
+const T = id => tracker[id] || {};
+
+function emailOk(b){ return b.channels.email?.allowed || !!T(b.id).consent; }
+function emailTo(b){ return b.channels.email?.to || T(b.id).consent?.email || (b.emails[0] || {}).address || ""; }
+function route(b){
+  if (emailOk(b)) return "email";
+  for (const k of ["phone","visit","letter"]) if (b.channels[k]?.allowed) return k === "letter" ? "letter" : k;
+  return "none";
+}
+function formKey(b){ return b.legal_form_source === "prh" ? b.legal_form : (b.legal_form === "unknown" ? "unknown" : b.legal_form); }
+function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("on"); setTimeout(() => t.classList.remove("on"), 1600); }
+function segLabel(k){ return DATA.segments[k]?.label || k; }
+function sourceText(b, lang){
+  const fi = lang === "fi", s = new Set(b.provenance.map(p => p.source)), parts = [];
+  if (s.has("prh")) parts.push(fi ? "PRH:n avoin yritysdata (YTJ)" : "PRH open company data (YTJ)");
+  if (s.has("osm")) parts.push(fi ? "OpenStreetMap-karttapalvelu" : "OpenStreetMap");
+  if (s.has("website")) parts.push(fi ? "yrityksenne omat verkkosivut" : "your own website");
+  return parts.join(fi ? " ja " : " and ");
+}
+
+function fill(tpl, v){ return (tpl || "").replace(/\{(\w+)\}/g, (_, k) => v[k] ?? ""); }
+function vars(b, lang){
+  const s = DATA.sender || {}, view = state.view[b.id] || {};
+  const offerKey = view.offer || b.offers[0] || (DATA.segments[b.segment] ? Object.keys(DATA.offers)[0] : "");
+  const o = DATA.offers[offerKey] || {}, fi = lang === "fi";
+  const w = (b.offer_why || {})[offerKey] || {};
+  const why = (fi ? w.fi : w.en) || (fi ? "sopisitte hyvin asiakkaaksemme" : "your business looks like a good fit");
+  return {business:b.name, city:b.city, offer_name:fi ? o.name_fi || o.name : o.name, offer_line:fi ? o.line_fi || o.line : o.line,
+    offer_price:fi ? o.price_fi || o.price : o.price, offer_url:o.url || s.website, why, source:sourceText(b, lang),
+    sender_name:s.name || "", sender_business:s.business || "", sender_id:s.business_id || "", sender_email:s.email || "",
+    sender_phone:s.phone || "", sender_website:s.website || "", sender_city:s.city || "", privacy_url:s.privacy_url || "",
+    segment:segLabel(b.segment).toLowerCase(),
+    audit_line:b.signals.site_ok && DATA.audit ? `${fi ? DATA.audit.line_fi || DATA.audit.line : DATA.audit.line} ${DATA.audit.url || ""}`.trim() : ""};
+}
+function draft(b, kind, lang){
+  const o = (DATA.outreach || {})[kind + "_" + lang] || (DATA.outreach || {})[kind + "_fi"] || {};
+  const v = vars(b, lang);
+  // A line that is only a placeholder with no value (e.g. an empty phone) disappears instead of leaving a gap.
+  const drop = t => (t || "").split("\n").filter(line => { const m = line.trim().match(/^\{(\w+)\}$/); return !m || v[m[1]]; }).join("\n");
+  const clean = s => s.split("\n").filter(line => !/^\s*[^\s:]+:\s*$/.test(line)).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  return {subject: fill(o.subject, v).trim(), body: clean(fill(drop(o.body), v))};
+}
+
+function stats(){
+  const L = DATA.leads;
+  const em = L.filter(emailOk).length, ph = L.filter(b => !emailOk(b) && b.channels.phone?.allowed).length;
+  const sent = L.filter(b => T(b.id).status).length;
+  const et = emailsToday();
+  $("stats").innerHTML = [[L.length, "businesses"], [em, "may be emailed"], [ph, "phone first"], [DATA.new_today, "new since last run"], [sent, "contacted by you"], [`${et} / ${LIMIT}`, "emails sent today"]]
+    .map(([n, t]) => `<div class="stat${t === "emails sent today" && et >= LIMIT ? " over" : ""}"><b>${n.toLocaleString()}</b><span>${t}</span></div>`).join("");
+}
+function picks(el, key, counts, labels, limit){
+  let entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const extra = limit && entries.length > limit ? entries.length - limit : 0;
+  if (extra) entries = entries.filter(([v], i) => i < limit || v === state[key]);
+  el.innerHTML = [`<button class="pick" data-k="${key}" data-v="" aria-pressed="${state[key] === null}"><span>All</span><span>${Object.values(counts).reduce((a, b) => a + b, 0)}</span></button>`]
+    .concat(entries.map(([v, n]) => `<button class="pick" data-k="${key}" data-v="${esc(v)}" aria-pressed="${state[key] === v}"><span>${esc(labels ? labels[v] || v : v)}</span><span>${n}</span></button>`)).join("")
+    + (extra ? `<p class="why">+${extra} more: type the name in the search box</p>` : "");
+}
+function filtered(){
+  const q = $("q").value.trim().toLowerCase(), onlyNew = $("f-new").checked;
+  let L = DATA.leads.filter(b => {
+    const t = T(b.id);
+    if (t.status === "dnc" && state.tab !== "sent") return false;
+    if (state.tab === "leads" && t.status) return false;
+    if (state.tab === "sent" && !t.status) return false;
+    if (state.tab === "follow" && !(["emailed","letter","called","visited"].includes(t.status) && daysSince(t.date) >= FOLLOW)) return false;
+    if (state.segment && b.segment !== state.segment) return false;
+    if (state.route && route(b) !== state.route) return false;
+    if (state.offer && !b.offers.includes(state.offer)) return false;
+    if (state.form && formKey(b) !== state.form) return false;
+    if (state.region && (b.region || "unknown") !== state.region) return false;
+    if (state.muni && (b.municipality || b.city) !== state.muni) return false;
+    if (onlyNew && b.first_seen !== DATA.date) return false;
+    if (q && !`${b.name} ${b.other_names.join(" ")} ${b.street} ${b.postcode} ${b.city} ${b.municipality} ${b.domain}`.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const s = $("sort").value;
+  if (s === "email") L.sort((a, b) => (emailOk(b) - emailOk(a)) || b.score - a.score);
+  else if (s === "new") L.sort((a, b) => b.first_seen.localeCompare(a.first_seen));
+  else if (s === "name") L.sort((a, b) => a.name.localeCompare(b.name, "fi"));
+  else if (s === "post") L.sort((a, b) => (a.postcode || "99999").localeCompare(b.postcode || "99999"));
+  return L;
+}
+
+function channelTable(b){
+  const t = T(b.id);
+  return `<table class="ch">${["email","phone","visit","letter","form","sms"].map(k => {
+    const c = b.channels[k] || {};
+    let mark = c.allowed ? (c.caution ? '<span class="maybe">with care</span>' : '<span class="yes">yes</span>') : '<span class="no">no</span>';
+    let why = c.why || "";
+    if (k === "email" && !c.allowed && t.consent) { const role = t.consent.basis === "role"; mark = `<span class="yes">yes, ${role ? "role checked" : "consent"}</span>`; why = `${role ? "role documented" : "consent given"} ${t.consent.date} (${t.consent.how})`; }
+    return `<tr><td>${CH[k]}</td><td>${mark}</td><td>${esc(why)}${c.to ? `<br><code>${esc(c.to)}</code>` : ""}</td></tr>`;
+  }).join("")}</table>`;
+}
+function facts(b){
+  const f = [];
+  f.push(`<span>${esc(FORM[formKey(b)] || b.legal_form)}${b.legal_form_source === "prh" ? " (PRH)" : b.legal_form_source === "name" ? " (from name)" : ""}</span>`);
+  if (b.business_id) f.push(`<span>Y-tunnus <a href="https://tietopalvelu.ytj.fi/yritys/${esc(b.business_id)}" target="_blank" rel="noopener">${esc(b.business_id)}</a></span>`);
+  if (b.industry) f.push(`<span>${esc(b.industry)}</span>`);
+  if (b.registered) f.push(`<span>registered ${esc(b.registered)}</span>`);
+  if (b.website) f.push(`<a href="${esc(b.website)}" target="_blank" rel="noopener">${esc(b.domain)}</a>`);
+  if (b.phone) f.push(`<span>${esc(b.phone)} <span class="why">(${esc(b.phone_source)})</span></span>`);
+  if (b.instagram) f.push(`<a href="https://instagram.com/${esc(b.instagram)}" target="_blank" rel="noopener">Instagram</a>`);
+  if (b.lat) f.push(`<a href="https://www.openstreetmap.org/${esc(b.osm_ref)}" target="_blank" rel="noopener">map</a>`);
+  const sig = b.signals || {};
+  if (sig.booking) f.push(`<span>booking: ${esc(sig.booking.join(", "))}</span>`);
+  if (sig.chat) f.push(`<span>chat: ${esc(sig.chat.join(", "))}</span>`);
+  if (sig.platform) f.push(`<span>site: ${esc(sig.platform.join(", "))}</span>`);
+  if (b.opening_hours) f.push(`<span>hours: ${esc(b.opening_hours)}</span>`);
+  return `<div class="facts">${f.join("")}</div>`;
+}
+function detail(b){
+  const t = T(b.id), view = state.view[b.id] = state.view[b.id] || {};
+  const kinds = [];
+  if (emailOk(b)) kinds.push("email");
+  if (b.channels.phone?.allowed) kinds.push("phone");
+  if (b.channels.visit?.allowed) kinds.push("visit");
+  if (b.channels.letter?.allowed) kinds.push("letter");
+  const kind = kinds.includes(view.kind) ? view.kind : kinds[0];
+  const lang = view.lang || "fi";
+  const d = kind ? (t.drafts?.[kind + lang] || draft(b, kind, lang)) : null;
+  const offerOpts = Object.entries(DATA.offers).map(([k, o]) => `<option value="${k}" ${(view.offer || b.offers[0]) === k ? "selected" : ""}>${esc(o.name)}${b.offers.includes(k) ? " (fits)" : ""}</option>`).join("");
+  const toAddr = emailTo(b);
+  return `<div class="more">
+    <p class="why">${esc(b.reasons.join(" · "))}</p>
+    ${facts(b)}
+    ${channelTable(b)}
+    ${!emailOk(b) && b.channels.email?.role_unlock ? `<p class="notice">The only address is a named person's. Email them only if they agreed, or if you have checked that their role (owner, manager) is directly about what you offer, and written down how you know (e.g. "owner, named on the website's About page"). Otherwise call or visit first.</p>`
+      : !emailOk(b) && b.emails.length ? `<p class="notice">This business publishes an email address, but it is ${b.legal_form_source === "prh" ? "" : "probably "}a sole trader or its company form is unconfirmed, so a marketing email needs their consent first. Call or visit, and ask: “Saanko lähettää tietoa sähköpostilla?” If they say yes, record it below and the email draft unlocks.</p>` : ""}
+    ${kind ? `<div class="draft">
+      <div class="actions"><span class="seg">${kinds.map(k => `<button data-kind="${k}" data-id="${esc(b.id)}" aria-pressed="${k === kind}">${CH[k]}</button>`).join("")}</span>
+        <span class="seg">${["fi","en"].map(l => `<button data-lang="${l}" data-id="${esc(b.id)}" aria-pressed="${l === lang}">${l.toUpperCase()}</button>`).join("")}</span>
+        <select data-offer="${esc(b.id)}" aria-label="Offer" style="width:auto">${offerOpts}</select></div>
+      ${kind === "email" ? `<input data-subj="${esc(b.id)}" value="${esc(d.subject)}" aria-label="Subject">` : ""}
+      <textarea data-body="${esc(b.id)}" aria-label="Text">${esc(d.body)}</textarea>
+      <div class="actions">
+        ${kind === "email" && toAddr ? `<a class="btn primary" data-mail="${esc(b.id)}" href="#">Open in my email app</a><a class="btn" data-gmail="${esc(b.id)}" href="#" target="_blank" rel="noopener">Open in Gmail</a>` : ""}
+        <button class="btn" data-copytext="${esc(b.id)}">Copy</button>
+        <button class="btn" data-reset="${esc(b.id)}">Reset</button>
+        ${kind === "email" ? `<span class="why">to <code>${esc(toAddr)}</code></span>` : ""}
+      </div>
+      <p class="why">${kind === "email" ? "Keep the sender details, the data-source line and the opt-out line: Finnish law and GDPR require them. Send one by one, never as a mass mailing." : kind === "phone" ? "Introduce yourself and your business first. If they say no, mark Do not contact. If they agree to email, record the consent." : kind === "letter" ? "Print, sign and post. Letters to businesses need no consent; include how to opt out." : "Go outside rush hours, keep it to two minutes, leave a card or flyer."}</p></div>`
+      : `<p class="notice stop">No lawful route found for this business: no published phone, address or permitted email.</p>`}
+    ${!b.channels.email?.allowed ? `<div class="consent"><b>Unlock email</b>${t.consent ? `<span>${t.consent.basis === "role" ? "Role documented" : "Consent given"} ${esc(t.consent.date)}, ${esc(t.consent.how)}, to <code>${esc(t.consent.email)}</code>. <button class="btn small" data-unconsent="${esc(b.id)}">Withdraw</button></span>` :
+      `<span class="why">Only after they said yes to you (on the phone, in person, or in writing)${b.channels.email?.role_unlock ? ", or after checking their role is directly about your offer" : ""}.</span>
+      <div class="actions">${b.channels.email?.role_unlock ? `<select data-cbasis="${esc(b.id)}" style="width:auto"><option value="consent">They consented</option><option value="role">Their role fits (owner / manager)</option></select>` : ""}
+      <input data-cemail="${esc(b.id)}" placeholder="email they gave you" value="${esc(b.channels.email?.to || (b.emails[0] || {}).address || "")}">
+      <input data-chow="${esc(b.id)}" placeholder="how: phone call with owner, visit..." style="flex:1">
+      <button class="btn" data-consent="${esc(b.id)}">Record consent</button></div>`}</div>` : ""}
+    <div class="track">
+      <select data-status="${esc(b.id)}" aria-label="Status">${STATUS.map(([v, n]) => `<option value="${v}" ${t.status === v ? "selected" : ""}>${n}</option>`).join("")}</select>
+      ${t.date ? `<span class="why">since ${esc(t.date)}</span>` : ""}
+      ${t.status === "dnc" ? `<span class="why">Run <code>python -m bizradar sync</code> with your tracker file so the radar never shows them again.</span>` : ""}
+      <textarea data-notes="${esc(b.id)}" placeholder="Notes (who you spoke to, what they use now, next step)">${esc(t.notes || "")}</textarea>
+    </div></div>`;
+}
+
+function render(){
+  stats();
+  const all = DATA.leads.filter(b => T(b.id).status !== "dnc");
+  const cnt = f => all.reduce((m, b) => { for (const k of [].concat(f(b))) if (k) m[k] = (m[k] || 0) + 1; return m; }, {});
+  picks($("f-segment"), "segment", cnt(b => b.segment), Object.fromEntries(Object.entries(DATA.segments).map(([k, v]) => [k, v.label])));
+  picks($("f-route"), "route", cnt(route), ROUTE);
+  picks($("f-offer"), "offer", cnt(b => b.offers), Object.fromEntries(Object.entries(DATA.offers).map(([k, v]) => [k, v.name])));
+  picks($("f-form"), "form", cnt(formKey), FORM);
+  picks($("f-region"), "region", cnt(b => b.region || "unknown"), {unknown:"Not known"}, 25);
+  const inRegion = state.region ? all.filter(b => (b.region || "unknown") === state.region) : all;
+  picks($("f-muni"), "muni", inRegion.reduce((m, b) => { const k = b.municipality || b.city; if (k) m[k] = (m[k] || 0) + 1; return m; }, {}), null, 30);
+  const due = b => { const t = T(b.id); return ["emailed","letter","called","visited"].includes(t.status) && daysSince(t.date) >= FOLLOW; };
+  $("nfollow").textContent = DATA.leads.filter(due).length;
+  $("nsent").textContent = DATA.leads.filter(b => T(b.id).status).length;
+  const L = filtered();
+  $("count").textContent = `${L.length.toLocaleString()} shown` + (state.tab === "follow" ? ` · contacted ${FOLLOW}+ days ago, no reply yet` : "");
+  $("list").innerHTML = L.length ? L.slice(0, 400).map(b => {
+    const t = T(b.id), r = route(b);
+    const rtag = {email:["good","Email allowed"], phone:["mid","Phone first"], visit:["mid","Visit"], letter:["mid","Letter"], none:["warn","No route"]}[r];
+    const st = t.status ? (STATUS.find(s => s[0] === t.status) || [, t.status])[1] + (t.date ? ` ${t.date.slice(5)}` : "") : "";
+    return `<li><button class="row" data-open="${esc(b.id)}" aria-expanded="${state.open.has(b.id)}">
+      <div class="score">${b.score}</div>
+      <div><div class="title">${esc(b.name)}${b.other_names.length ? ` <span class="why">(${esc(b.other_names[0])})</span>` : ""}</div>
+        <div class="meta">${esc(segLabel(b.segment))} · ${esc([b.street, b.postcode, b.city].filter(Boolean).join(" "))}${b.region ? ` (${esc(b.region)})` : ""} · ${esc(FORM[formKey(b)] || "")}</div>
+        <div class="tags"><span class="tag ${rtag[0]}">${rtag[1]}</span>${b.first_seen === DATA.date && !DATA.first_run ? '<span class="tag new">New</span>' : ""}
+          ${b.offers.map(o => `<span class="tag">${esc(DATA.offers[o]?.name || o)}</span>`).join("")}</div></div>
+      <div class="state ${due(b) ? "due" : t.status ? "on" : ""}">${due(b) ? "follow up" : esc(st)}</div></button>
+      ${state.open.has(b.id) ? detail(b) : ""}</li>`;
+  }).join("") : `<li class="empty">Nothing matches these filters.</li>`;
+}
+
+function aboutView(){
+  const rows = DATA.sources.map(s => `<tr><td>${esc(s.name)}</td><td class="${s.ok ? "" : "err"}">${s.ok ? "ok" : "failed"}</td><td>${s.fetched.toLocaleString()}</td><td>${esc(s.error || s.detail || "")}</td></tr>`).join("");
+  const f = DATA.funnel, w = DATA.sites || {};
+  $("about").innerHTML = `<div class="panel"><h3>Today's run</h3>
+    <p>${f.companies.toLocaleString()} registered companies (PRH) and ${f.places.toLocaleString()} mapped places (OpenStreetMap); ${f.matched} places matched to a company · ${f.merged.toLocaleString()} businesses · ${f.outside_area || 0} outside your area · ${f.opted_out} on your opt-out list · ${f.expired} past the retention limit · ${f.low_score} with no clear fit · <b>${DATA.leads.length.toLocaleString()} shown</b>.</p>
+    <p>Area: ${esc(DATA.area || "")}. Websites: ${w.read || 0} read today, ${w.cached || 0} from cache, ${w.failed || 0} did not open. Generated ${esc(DATA.generated_at)}.</p></div>
+    <div class="panel"><h3>Sources</h3><table class="src"><tr><th>Source</th><th></th><th>Records</th><th>Detail</th></tr>${rows}</table></div>
+    <div class="panel"><h3>The rules this dashboard follows</h3>
+    <p><b>Email and SMS</b> to a natural person need prior consent. A sole trader (toiminimi) is a natural person. So email is offered only to companies that PRH confirms are an Oy, Ky, Ay or co-operative, using the address they publish on their own website, and to anyone who gave you consent.</p>
+    <p><b>Phone, a visit or a letter</b> are fine for any business unless they have said no.</p>
+    <p><b>Every first message</b> says who you are (name, business, Y-tunnus), why you are writing, where you got their details, and how to say no. One message at a time, never a mass mailing.</p>
+    <p><b>“No” is final.</b> Mark them Do not contact, then sync, and the radar drops them from every future run.</p>
+    <p class="why">Background and sources: docs/legal-research.md. This is guidance, not legal advice.</p></div>
+    <div class="panel"><h3>Sync your tracker back to the radar</h3>
+    <p>Your statuses live in this browser. Download them, then run <code>python -m bizradar sync &lt;file&gt;</code>: “Do not contact” goes to the opt-out list, contacted businesses are kept past the retention limit, and a contact log is written to <code>private/contact-log.csv</code>.</p>
+    <p>For the online radar (GitHub Pages), run the same command with <code>RADAR_PASSPHRASE</code> set: it also writes the encrypted <code>data/shared.enc</code>. Commit and push that file, and the next daily run honours your opt-outs and contacted statuses too.</p>
+    <div class="actions"><button class="btn primary" id="export">Download my tracker</button><label class="btn">Restore from file<input type="file" id="import" accept="application/json" hidden></label></div></div>`;
+  $("export").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(tracker, null, 1)], {type:"application/json"})); a.download = `bizradar-tracker-${today}.json`; a.click(); };
+  $("import").onchange = ev => { const f = ev.target.files[0]; if (!f) return; f.text().then(t => { tracker = Object.assign(tracker, JSON.parse(t)); save(); toast("Tracker restored"); }); };
+}
+
+function touch(id){
+  const b = BYID.get(id), t = tracker[id] = tracker[id] || {};
+  Object.assign(t, {name:b.name, business_id:b.business_id, domain:b.domain, phone:b.phone, postcode:b.postcode,
+    emails:b.emails.map(e => e.address)});
+  return t;
+}
+function setStatus(id, status, channel){
+  const t = touch(id);
+  if (t.status !== status) t.date = status ? today : "";
+  t.status = status;
+  t.log = t.log || [];
+  if (status) t.log.push({date:today, status, channel:channel || ""});
+  if (!status && !t.consent && !t.notes) delete tracker[id];
+  save();
+}
+function current(id){
+  const b = BYID.get(id);
+  const subj = document.querySelector(`[data-subj="${CSS.escape(id)}"]`)?.value || "";
+  const body = document.querySelector(`[data-body="${CSS.escape(id)}"]`).value;
+  return {b, subj, body};
+}
+
+document.addEventListener("click", ev => {
+  const el = ev.target.closest("[data-open],[data-k],[data-mail],[data-gmail],[data-copytext],[data-reset],[data-tab],[data-kind],[data-lang],[data-consent],[data-unconsent]");
+  if (!el) return;
+  const id = el.dataset.id;
+  if (el.dataset.tab) {
+    state.tab = el.dataset.tab;
+    document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b === el));
+    $("main").hidden = state.tab === "about"; $("aboutview").hidden = state.tab !== "about";
+    if (state.tab === "about") aboutView(); else render();
+    return;
+  }
+  if (el.dataset.open) { const k = el.dataset.open; state.open.has(k) ? state.open.delete(k) : state.open.add(k); render(); return; }
+  if (el.dataset.k) { state[el.dataset.k] = el.dataset.v || null; if (el.dataset.k === "region") state.muni = null; render(); return; }
+  if (el.dataset.kind) { state.view[id].kind = el.dataset.kind; render(); return; }
+  if (el.dataset.lang) { state.view[id].lang = el.dataset.lang; render(); return; }
+  if (el.dataset.consent) {
+    const k = el.dataset.consent, email = document.querySelector(`[data-cemail="${CSS.escape(k)}"]`).value.trim(),
+      how = document.querySelector(`[data-chow="${CSS.escape(k)}"]`).value.trim(),
+      basis = document.querySelector(`[data-cbasis="${CSS.escape(k)}"]`)?.value || "consent";
+    if (!email || !how) { toast(basis === "role" ? "Add the email and how you know their role" : "Add the email and how they agreed"); return; }
+    touch(k).consent = {date:today, how, email, basis}; save(); toast(basis === "role" ? "Role check recorded" : "Consent recorded"); render(); return;
+  }
+  if (el.dataset.unconsent) { delete touch(el.dataset.unconsent).consent; save(); render(); return; }
+  if (el.dataset.copytext) { const {subj, body} = current(el.dataset.copytext); navigator.clipboard.writeText(subj ? `${subj}\n\n${body}` : body); toast("Copied"); return; }
+  if (el.dataset.reset) { const t = tracker[el.dataset.reset]; if (t) { delete t.drafts; save(); } render(); return; }
+  if (el.dataset.mail || el.dataset.gmail) {
+    const k = el.dataset.mail || el.dataset.gmail, {b, subj, body} = current(k), to = emailTo(b);
+    if (emailsToday() >= LIMIT && !confirm(`You have sent ${emailsToday()} emails today (your limit is ${LIMIT}). Many cold emails in one day from one address land in spam. Send this one anyway?`)) { ev.preventDefault(); return; }
+    if (el.dataset.mail) el.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+    else el.href = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+    setStatus(k, "emailed", "email"); tracker[k].to = to; save();
+    setTimeout(render, 300);
+  }
+});
+document.addEventListener("change", ev => {
+  const el = ev.target;
+  if (el.dataset.status !== undefined) { const k = el.dataset.status; setStatus(k, el.value, state.view[k]?.kind); render(); }
+  else if (el.dataset.offer !== undefined) { const k = el.dataset.offer; state.view[k].offer = el.value; const t = tracker[k]; if (t) { delete t.drafts; save(); } render(); }
+  else if (["f-new","sort"].includes(el.id)) render();
+});
+document.addEventListener("input", ev => {
+  const el = ev.target;
+  if (el.id === "q") return render();
+  const id = el.dataset.notes || el.dataset.subj || el.dataset.body;
+  if (!id) return;
+  const t = touch(id), view = state.view[id] || {};
+  if (el.dataset.notes) t.notes = el.value;
+  else {
+    const b = BYID.get(id);
+    const kinds = ["email","phone","visit","letter"].filter(k => k === "email" ? emailOk(b) : b.channels[k]?.allowed);
+    const kind = kinds.includes(view.kind) ? view.kind : kinds[0];
+    const {subj, body} = current(id);
+    t.drafts = t.drafts || {}; t.drafts[kind + (view.lang || "fi")] = {subject: subj, body};
+  }
+  save();
+});
+$("foot").innerHTML = `Company data: PRH open data, CC BY 4.0. Regions and postcodes: Statistics Finland, CC BY 4.0. Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>, ODbL. Contact details only as each business published them on its own website. Generated ${esc(DATA.date)}.`;
+render();
+</script>
+</body>
+</html>

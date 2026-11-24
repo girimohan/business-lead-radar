@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.env
+.claude/settings.local.json
+# Leads, website contact details, contact log: personal data, never committed.
+private/
+# Run state between online runs lives encrypted in the GitHub Actions cache, never in git.
+.state/
+site/
+data/seen.json
+data/domains.json
+# Opt-outs and contacted statuses contain emails and phone numbers: back them up, never commit them in clear.
+# The encrypted copy for the online radar, data/shared.enc, is committed.
+data/optout.json
+data/contacts.json

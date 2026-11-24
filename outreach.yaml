@@ -1,0 +1,142 @@
+# Message templates, one per channel and language. Edit freely, but keep the identification, data-source and
+# opt-out lines: Finnish marketing law and GDPR Art. 14 require them in the first message.
+# Placeholders: {business} {city} {segment} {offer_name} {offer_line} {offer_price} {offer_url} {why} {source}
+# {audit_line} (the free website audit P.S., only when the business has a website the radar read)
+# {sender_name} {sender_business} {sender_id} {sender_email} {sender_phone} {sender_website} {sender_city} {privacy_url}
+# Finnish place names inflect (Vantaa -> vantaalainen), so the Finnish texts name the town directly: edit them if you move.
+# Claims must be true: do not promise trials, discounts or results Barmo does not offer (misleading marketing is unlawful).
+# A line that ends up as just "Label:" (because the value is empty) is removed.
+
+email_fi:
+  subject: "{offer_name} – {business}"
+  body: |
+    Hei,
+
+    olen {sender_name}, vantaalainen yrittäjä ({sender_business}). Rakennan suomalaisille pienyrityksille työkaluja, jotka säästävät aikaa asiakaspalvelussa ja paperitöissä.
+
+    Huomasin, että {why}. Siihen sopisi {offer_name}: {offer_line}. Hinta {offer_price}.
+
+    Kiinnostaako lyhyt 15 minuutin puhelu tai esittely? Voit vastata tähän viestiin.
+
+    {audit_line}
+
+    Ystävällisin terveisin,
+    {sender_name}
+    {sender_business} (Y-tunnus {sender_id})
+    {sender_phone}
+    {sender_website}
+
+    Sain yhteystietonne lähteestä: {source}. Käytän niitä vain tähän yhteydenottoon.
+    Jos et halua viestejä minulta, vastaa "ei kiitos", niin poistan tietonne enkä ota enää yhteyttä.
+    Tietosuojaseloste: {privacy_url}
+
+email_en:
+  subject: "{offer_name} for {business}"
+  body: |
+    Hello,
+
+    I am {sender_name}, a small business owner in {sender_city} ({sender_business}). I build tools that save small businesses in Finland time on customer service and paperwork.
+
+    I noticed that {why}. {offer_name} could help: {offer_line}. It costs {offer_price}.
+
+    Would a short 15-minute call or demo be useful? Just reply to this email.
+
+    {audit_line}
+
+    Best regards,
+    {sender_name}
+    {sender_business} (Business ID {sender_id})
+    {sender_phone}
+    {sender_website}
+
+    I found your contact details in: {source}. I use them only for this message.
+    If you would rather not hear from me, reply "no thanks" and I will delete your details and not contact you again.
+    Privacy notice: {privacy_url}
+
+phone_fi:
+  body: |
+    PUHELUN RUNKO (ei luettavaksi sanasta sanaan)
+
+    1. Esittäydy: "Hei, {sender_name} täällä, {sender_business} Vantaalta. Onko sinulla hetki, vai soitanko myöhemmin?"
+       Kerro heti alussa (pakollinen): "Löysin numeronne lähteestä {source}. Tietosuojaseloste on osoitteessa {privacy_url}."
+    2. Syy: "Soitan, koska teen pienille yrityksille {offer_name}-palvelua. Huomasin, että {why}."
+    3. Kysy, älä myy: "Miten hoidatte nyt ajanvaraukset ja asiakkaiden kysymykset illalla tai kiireessä?"
+    4. Tarjous: "{offer_line}. Hinta {offer_price}."
+    5. Lupa sähköpostiin: "Saanko lähettää lyhyen esittelyn sähköpostilla? Mihin osoitteeseen?"
+       -> Jos kyllä: kirjaa suostumus dashboardiin (päivä, kuka, osoite).
+    6. Jos ei kiinnosta: "Selvä, kiitos ajastasi. En soita uudelleen." -> merkitse "Do not contact again".
+    7. Kielto voi tulla suullisesti: "ei kiinnosta, älä soita" riittää. Kirjaa se samana päivänä.
+
+phone_en:
+  body: |
+    CALL OUTLINE (not a script to read out)
+
+    1. Introduce yourself: "Hi, this is {sender_name} from {sender_business} in Vantaa. Is now a good moment, or shall I call later?"
+       Say at the start (required): "I found your number in {source}. My privacy notice is at {privacy_url}."
+    2. Reason: "I'm calling because I offer {offer_name} to small businesses. I noticed that {why}."
+    3. Ask, don't pitch: "How do you handle bookings and customer questions in the evenings or when you're busy?"
+    4. Offer: "{offer_line}. It costs {offer_price}."
+    5. Permission to email: "May I send you a short introduction by email? Which address?"
+       -> If yes: record the consent in the dashboard (date, who, address).
+    6. If not interested: "Understood, thanks for your time. I won't call again." -> mark "Do not contact again".
+    7. A refusal can be spoken: "not interested, don't call" is enough. Record it the same day.
+
+letter_fi:
+  body: |
+    {business}
+    (osoite)
+
+    Hei,
+
+    olen {sender_name}, vantaalainen yrittäjä ({sender_business}, Y-tunnus {sender_id}). Teen pienille yrityksille {offer_name}-palvelua: {offer_line}.
+
+    Huomasin, että {why}. Hinta {offer_price}.
+
+    Jos kiinnostaa, soita tai laita viesti: {sender_phone}, {sender_email}. Kerron mielelläni lisää 15 minuutissa.
+
+    Ystävällisin terveisin,
+    {sender_name}
+    {sender_website}
+
+    Osoitetietonne ovat lähteestä {source}. Jos et halua yhteydenottoja, ilmoita siitä yllä oleviin yhteystietoihin, niin poistan tietonne. Tietosuojaseloste: {privacy_url}
+
+letter_en:
+  body: |
+    {business}
+    (address)
+
+    Hello,
+
+    I am {sender_name}, a business owner in {sender_city} ({sender_business}, Business ID {sender_id}). I offer {offer_name} to small businesses: {offer_line}.
+
+    I noticed that {why}. It costs {offer_price}.
+
+    If this sounds useful, call or message me: {sender_phone}, {sender_email}. I'm happy to explain in 15 minutes.
+
+    Best regards,
+    {sender_name}
+    {sender_website}
+
+    Your address comes from {source}. If you would rather not be contacted, tell me at the details above and I will delete your details. Privacy notice: {privacy_url}
+
+visit_fi:
+  body: |
+    KÄYNTI (max 2 min, ei ruuhka-aikaan)
+
+    - Esittäydy ja kerro yrityksesi nimi: {sender_name}, {sender_business}.
+    - Yksi lause: "Teen {offer_name}-palvelua pienille yrityksille: {offer_line}."
+    - Kysy: "Kuka teillä päättää verkkosivuista / ajanvarauksesta?" ja "Saanko jättää kortin?"
+    - Jätä käyntikortti tai esite, jossa Y-tunnus {sender_id} ja yhteystiedot.
+    - Jos kiinnostaa ja haluavat lisätietoa sähköpostilla: kirjaa suostumus dashboardiin.
+    - Jos ei kiinnosta: kiitä ja merkitse "Do not contact again".
+
+visit_en:
+  body: |
+    VISIT (2 minutes max, outside rush hours)
+
+    - Introduce yourself and your business: {sender_name}, {sender_business}.
+    - One sentence: "I offer {offer_name} to small businesses: {offer_line}."
+    - Ask: "Who decides about your website / bookings?" and "May I leave a card?"
+    - Leave a card or flyer with Business ID {sender_id} and your contact details.
+    - If they want more information by email: record the consent in the dashboard.
+    - If not interested: thank them and mark "Do not contact again".

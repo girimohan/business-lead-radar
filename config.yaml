@@ -1,0 +1,191 @@
+# Business Lead Radar: everything you are likely to tune lives in this file.
+
+# Sender identity. Finnish marketing rules require every message to say clearly who it is from.
+sender:
+  name: "Mohan Giri"                     # your name
+  business: "Barmo"            # trading name
+  business_id: "3111862-6"     # Y-tunnus
+  email: "barmo.fin@gmail.com"                    # the address you send from
+  phone: ""
+  website: "https://www.barmo.fi"
+  city: "Vantaa"
+  privacy_url: ""              # public link to your prospect privacy notice (template: docs/tietosuojaseloste.md)
+
+# Where to look: "all" for the whole of Finland, or a list of municipalities and/or regions (maakunta), in
+# Finnish: [Vantaa, Helsinki] or [Uusimaa, Pirkanmaa]. The dashboard filters by region and municipality either way.
+# A quick local run for one town: python -m bizradar run --area Vantaa
+area: all
+
+# What to look for. tol = TOL 2025 industry codes (PRH, 5 digits); osm = OpenStreetMap tags.
+# offers = the Barmo products that usually fit this kind of business, best first.
+segments:
+  hair:
+    label: Hair salons and barbers
+    tol: ["96210"]
+    osm: ["shop=hairdresser"]
+    offers: [receptionist, website, accounts]
+  beauty:
+    label: Beauty, nails, lashes, skin care, tattoo
+    tol: ["96220"]
+    osm: ["shop=beauty", "shop=cosmetics", "shop=tattoo"]
+    offers: [receptionist, website, accounts]
+  wellness:
+    label: Massage, spa, sauna, alternative therapies
+    tol: ["96230", "86960"]
+    osm: ["shop=massage", "leisure=sauna", "amenity=spa"]
+    offers: [receptionist, website, accounts]
+  physio:
+    label: Physiotherapy
+    tol: ["86950", "86901"]
+    osm: ["healthcare=physiotherapist"]
+    offers: [receptionist, website]
+  restaurant:
+    label: Restaurants
+    tol: ["56111", "56112"]
+    osm: ["amenity=restaurant", "amenity=fast_food"]
+    offers: [receptionist, website, automation]
+  cafe:
+    label: Cafés and bakeries
+    tol: ["56302", "10710"]
+    osm: ["amenity=cafe", "shop=bakery", "shop=pastry"]
+    offers: [website, receptionist, accounts]
+  bar:
+    label: Bars and pubs
+    tol: ["56301"]
+    osm: ["amenity=bar", "amenity=pub"]
+    offers: [website, receptionist]
+  catering:
+    label: Catering and food trucks
+    tol: ["56210", "56220", "56120"]
+    osm: []
+    offers: [website, receptionist, accounts]
+  fitness:
+    label: Gyms, personal trainers, sports coaching
+    tol: ["93130", "85510"]
+    osm: ["leisure=fitness_centre"]
+    offers: [receptionist, website]
+  shop:
+    label: Small shops (flowers, gifts, clothes, pets)
+    tol: ["47761", "47711", "47770", "47763", "47750"]
+    osm: ["shop=florist", "shop=gift", "shop=clothes", "shop=jewelry", "shop=pet"]
+    offers: [shopify_faq, website, accounts]
+  cleaning:
+    label: Cleaning and home services
+    tol: ["81210", "96910"]
+    osm: []
+    offers: [website, receptionist, accounts]
+  photo:
+    label: Photographers
+    tol: ["74200"]
+    osm: ["craft=photographer", "shop=photo"]
+    offers: [website, accounts]
+  dental:
+    label: Dental clinics
+    tol: ["86230"]
+    osm: ["amenity=dentist"]
+    offers: [receptionist, website]
+  health:
+    label: Therapists and other health services
+    tol: ["86909", "86990"]
+    osm: ["healthcare=psychotherapist", "healthcare=podiatrist", "healthcare=speech_therapist"]
+    offers: [receptionist, website, accounts]
+  vet:
+    label: Veterinary clinics
+    tol: ["75000"]
+    osm: ["amenity=veterinary"]
+    offers: [receptionist, website]
+  car:
+    label: Car repair and tyres
+    tol: ["95312", "95311", "45201", "45202"]
+    osm: ["shop=car_repair", "shop=tyres"]
+    offers: [receptionist, website, automation]
+  trades:
+    label: Electricians, plumbers, painters, joiners
+    tol: ["43210", "43220", "43341", "43342", "43320"]
+    osm: ["craft=electrician", "craft=plumber", "craft=painter", "craft=carpenter"]
+    offers: [website, receptionist, automation]
+  driving:
+    label: Driving schools
+    tol: ["85530"]
+    osm: ["amenity=driving_school"]
+    offers: [receptionist, website]
+  stay:
+    label: Guest houses, B&Bs, short-stay rooms
+    tol: ["55202", "55201", "55900"]
+    osm: ["tourism=guest_house", "tourism=hostel"]
+    offers: [receptionist, website, automation]
+  realestate:
+    label: Real estate agents
+    tol: ["68310"]
+    osm: ["office=estate_agent"]
+    offers: [receptionist, website, automation]
+
+# Barmo's products, as the drafts describe them. Keys are used in segments.offers.
+offers:
+  receptionist:
+    name: AI Receptionist
+    name_fi: AI-chatbot verkkosivuille
+    price: "from €199 setup + €49/month"
+    price_fi: "alkaen 199 € + 49 €/kk"
+    url: https://www.barmo.fi
+    url: https://www.barmo.fi/services/ai-chatbots
+    line: "a chat on the website you already have (WordPress, Wix, Squarespace and others) that answers customers' questions from your own information, takes booking requests and sends leads to your email, in Finnish and English"
+    line_fi: "nykyisille verkkosivuillenne (WordPress, Wix, Squarespace ym.) tuleva chat, joka vastaa asiakkaiden kysymyksiin teidän omien tietojenne pohjalta, ottaa vastaan ajanvarauspyyntöjä ja lähettää yhteydenotot sähköpostiinne, suomeksi ja englanniksi"
+  website:
+    name: Website package
+    name_fi: Verkkosivupaketti
+    price: "from €199"
+    price_fi: "alkaen 199 €"
+    url: https://www.barmo.fi/services/websites-and-web-apps
+    line: "a new website or a rebuild of your old one, fast and mobile-friendly, with your Google Business Profile set up and booking, a contact form or WhatsApp, at a fixed price agreed in writing"
+    line_fi: "uudet kotisivut tai vanhojen uudistus: nopeat ja mobiiliystävälliset, Google-yritysprofiili kuntoon ja ajanvaraus, yhteydenottolomake tai WhatsApp, kiinteään kirjallisesti sovittuun hintaan"
+  accounts:
+    name: Barmo Accounts
+    name_fi: Barmo Accounts
+    price: "from €30/month"
+    price_fi: "alkaen 30 €/kk"
+    url: https://accounts.barmo.fi
+    line: "bookkeeping, VAT returns and tax filing for sole traders and gig workers, in Finnish and English; AI reads your receipts and a bookkeeper checks every figure"
+    line_fi: "kirjanpito, ALV-ilmoitukset ja veroilmoitus toiminimelle suomeksi tai englanniksi; tekoäly lukee kuitit ja kirjanpitäjä tarkistaa jokaisen luvun"
+  shopify_faq:
+    name: FAQ AI for Shopify
+    name_fi: FAQ AI Shopifyyn
+    price: "free 60-day pilot, then €29/month"
+    price_fi: "ilmainen 60 päivän pilotti, sitten 29 €/kk"
+    url: https://www.barmo.fi/shopify-faq-ai
+    line: "answers shoppers' product, shipping and return questions from your store's own data"
+    line_fi: "vastaa asiakkaiden tuote-, toimitus- ja palautuskysymyksiin verkkokauppasi omien tietojen pohjalta"
+  automation:
+    name: Workflow automation
+    name_fi: Automaatio
+    price: "fixed price after a free call"
+    price_fi: "kiinteä hinta maksuttoman puhelun jälkeen"
+    url: https://www.barmo.fi/services/workflow-automation
+    line: "connecting your booking, ordering and accounting tools so orders, reports and reminders run by themselves"
+    line_fi: "varaus-, tilaus- ja kirjanpitotyökalujen yhdistäminen, jotta tilaukset, raportit ja muistutukset hoituvat itsestään"
+
+# Barmo's free website audit (barmo.fi): offered as a P.S. to every business whose website the radar read.
+audit:
+  url: https://www.barmo.fi/#audit
+  line: "P.S. Barmo also does a free website audit: within 48 hours you get five concrete improvements for speed, search visibility and getting more enquiries, no strings attached."
+  line_fi: "P.S. Teemme myös maksuttoman verkkosivuauditoinnin: 48 tunnissa saatte viisi konkreettista parannusta sivujen nopeuteen, hakunäkyvyyteen ja yhteydenottojen määrään, ilman sitoumuksia."
+
+# Reading the businesses' own websites. Registered companies' sites are read first (they may be emailed).
+# Across the whole country there are tens of thousands of sites: each run reads a batch, the rest are cached.
+enrichment:
+  enabled: true
+  max_sites_per_run: 1500      # new websites read per run (cached ones are free)
+  max_domain_guesses_per_run: 400
+  max_pages_per_site: 4
+  refresh_days: 30
+
+# OpenStreetMap places change slowly: reuse an answer this many days old before asking Overpass again.
+osm_refresh_days: 6
+
+# Emails you send one by one from your own mailbox. The dashboard counts today's and warns past this number:
+# a new sender address that suddenly sends many cold emails lands in spam, and one-to-one is the point.
+email_daily_limit: 25
+
+min_score: 30            # leads below this are not shown (no evidenced fit and no email route)
+retention_days: 180      # a lead you never contacted is deleted this long after it was first seen
+follow_up_days: 10

@@ -57,7 +57,10 @@ def domain_of(url: str) -> str:
         return ""
     if "://" not in url:
         url = "http://" + url
-    host = (urlsplit(url).hostname or "").lower()
+    try:
+        host = (urlsplit(url).hostname or "").lower()
+    except ValueError:   # malformed links on real websites ("http://[broken", bad ports)
+        return ""
     return host[4:] if host.startswith("www.") else host
 
 

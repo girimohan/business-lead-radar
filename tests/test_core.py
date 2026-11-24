@@ -192,3 +192,10 @@ def test_state_round_trip_only_restores_known_files(tmp_path):
         assert False
     except secure.BadPassphrase:
         pass
+
+
+def test_malformed_links_do_not_crash():
+    from bizradar.text import domain_of
+    assert domain_of("http://[broken-ipv6/page") == ""
+    boom = enrich._safe(lambda b: 1 / 0, {"ok": False})
+    assert boom(biz()) == {"ok": False}

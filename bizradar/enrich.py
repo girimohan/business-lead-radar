@@ -91,6 +91,16 @@ def _links(base: str, html: str, domain: str) -> list[str]:
     return out
 
 
+def _safe(fn, fallback):
+    """One broken website must never sink the run: any error counts as 'could not read'."""
+    def run(b):
+        try:
+            return fn(b)
+        except Exception:
+            return dict(fallback) if isinstance(fallback, dict) else fallback
+    return run
+
+
 def read_site(b: Business, max_pages: int = 4) -> dict:
     """Returns a cache entry: emails with the page they were on, phones, form, signals, socials."""
     entry = {"read": dt.date.today().isoformat(), "ok": False, "emails": [], "phones": [], "form": "",
@@ -206,7 +216,7 @@ class DomainGuesses:
         # Storefronts on the map first: those are the ones a "no website" claim would be made about.
         todo = sorted((b for b in businesses if not b.website and b.id not in self.data), key=lambda b: not b.osm_ref)[:budget]
         with cf.ThreadPoolExecutor(16) as ex:
-            for b, url in zip(todo, ex.map(guess_site, todo)):
+            for b, url in zip(todo, ex.map(_safe(guess_site, ""), todo)):
                 self.data[b.id] = url
         for b in businesses:
             if b.id in self.data and not b.website:
@@ -253,7 +263,9 @@ class SiteCache:
         todo.sort(key=lambda b: (b.legal_form_source != "prh", not b.osm_ref))
         todo = todo[:max_sites]
         with cf.ThreadPoolExecutor(16) as ex:
-            for b, entry in zip(todo, ex.map(lambda x: read_site(x, max_pages), todo)):
+            failed = {"read": dt.date.today().isoformat(), "ok": False, "emails": [], "phones": [], "form": "",
+                      "signals": {}, "instagram": "", "facebook": "", "pages": 0}
+            for b, entry in zip(todo, ex.map(_safe(lambda x: read_site(x, max_pages), failed), todo)):
                 self.data[b.domain] = entry
                 self.stats["read" if entry["ok"] else "failed"] += 1
 

@@ -379,7 +379,7 @@ function aboutView(){
     <p class="why">Background and sources: docs/legal-research.md. This is guidance, not legal advice.</p></div>
     <div class="panel"><h3>Sync your tracker back to the radar</h3>
     <p>Your statuses live in this browser. Download them, then run <code>python -m bizradar sync &lt;file&gt;</code>: “Do not contact” goes to the opt-out list, contacted businesses are kept past the retention limit, and a contact log is written to <code>private/contact-log.csv</code>.</p>
-    <p>For the online radar (GitHub Pages), run the same command with <code>RADAR_PASSPHRASE</code> set: it also writes the encrypted <code>data/shared.enc</code>. Commit and push that file, and the next daily run honours your opt-outs and contacted statuses too.</p>
+    <p>For the online radar (GitHub Pages), run the same command with <code>RADAR_PASSPHRASE</code> set: it also writes the encrypted <code>data/shared.enc</code>. Commit and push that file, and the next weekly run honours your opt-outs and contacted statuses too.</p>
     <div class="actions"><button class="btn primary" id="export">Download my tracker</button><label class="btn">Restore from file<input type="file" id="import" accept="application/json" hidden></label></div></div>`;
   $("export").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(tracker, null, 1)], {type:"application/json"})); a.download = `bizradar-tracker-${today}.json`; a.click(); };
   $("import").onchange = ev => { const f = ev.target.files[0]; if (!f) return; f.text().then(t => { tracker = Object.assign(tracker, JSON.parse(t)); save(); toast("Tracker restored"); }); };

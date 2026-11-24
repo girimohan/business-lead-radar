@@ -26,7 +26,7 @@ or when the radar starts collecting something new. Date and sign at the bottom.
 | Reasonable expectation | Businesses publish these details so customers and suppliers can reach them; B2B offers are common. Sole traders are a closer call, so they get the stricter channel rule. |
 | Nature of the data | Business contact data only; no special categories. |
 | Impact | One message or call; a "no" ends it permanently. |
-| Safeguards | Art. 14 notice in the first message; opt-out list checked on every run; data kept on one computer (git-ignored) and, for the daily online run, only encrypted with a passphrase GitHub does not have; uncontacted leads deleted after 180 days; website cache pruned; a contact log for accountability. |
+| Safeguards | Art. 14 notice in the first message; opt-out list checked on every run; data kept on one computer (git-ignored) and, for the weekly online run, only encrypted with a passphrase GitHub does not have; uncontacted leads deleted after 180 days; website cache pruned; a contact log for accountability. |
 | Vulnerable groups | None targeted. |
 
 **Conclusion:** the interest is legitimate, the processing is limited to what is needed, and with the

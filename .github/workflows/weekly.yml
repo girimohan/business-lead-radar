@@ -1,4 +1,4 @@
-name: Daily business lead radar
+name: Weekly business lead radar
 
 # Business contacts are personal data when the business is a sole trader. On GitHub they only ever exist
 # encrypted with the RADAR_PASSPHRASE secret: the published page asks for the passphrase, the saved state is
@@ -6,7 +6,7 @@ name: Daily business lead radar
 
 on:
   schedule:
-    - cron: "17 4 * * *"   # 06:17 Helsinki in winter, 07:17 in summer
+    - cron: "17 4 * * 1"   # Mondays 06:17 Helsinki in winter, 07:17 in summer
   workflow_dispatch:
 
 permissions:

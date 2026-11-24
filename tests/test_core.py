@@ -213,3 +213,56 @@ def test_website_work_stops_at_the_time_limit():
     got = dict(_timed(slow, list(range(8)), time.monotonic() + 1.0, "test", workers=8))
     assert got == {0: 0, 1: 2, 2: 4, 3: 6}
     assert time.monotonic() - t0 < 3
+
+
+def test_map_is_asked_region_by_region_with_fallback(monkeypatch, tmp_path):
+    from bizradar import http
+    from bizradar.sources import osm
+
+    segs = {"hair": {"osm": ["shop=hairdresser"]}, "cafe": {"osm": ["amenity=cafe"]}}
+    tiles = {"Kainuu": (63.6, 26.7, 65.5, 30.5), "Lappi": (65.5, 20.5, 70.1, 30.0)}
+    calls = []
+
+    def fake(q, read_timeout=90):
+        calls.append(q)
+        assert 'area["ISO3166-1"="FI"]' in q and "(area.a)(" in q
+        if "65.5,20.5" in q and "hairdresser" in q and "cafe" in q:
+            raise http.FetchError("HTTP 504")          # Lappi, both kinds at once: too big
+        els = []
+        if "hairdresser" in q:
+            els.append({"type": "node", "id": 1, "lat": 64, "lon": 27, "tags": {"shop": "hairdresser", "name": "Salon A"}})
+        if "cafe" in q:
+            els.append({"type": "node", "id": 2, "lat": 64, "lon": 27, "tags": {"amenity": "cafe", "name": "Kahvila B"}})
+        return {"elements": els}
+
+    monkeypatch.setattr(osm, "_overpass", fake)
+    monkeypatch.setattr(osm.time, "sleep", lambda s: None)
+    cache = tmp_path / "osm.json"
+    r = osm.fetch(None, segs, cache, 6, tiles)
+    assert r.ok and not r.error
+    assert len(calls) == 4                              # Kainuu once, Lappi failed once then one per kind
+    assert sorted(b.name for b in r.items) == ["Kahvila B", "Salon A"]   # same places in both boxes: kept once
+    calls.clear()
+    r = osm.fetch(None, segs, cache, 6, tiles)          # a week's answers are reused
+    assert calls == [] and len(r.items) == 2
+
+
+def test_whole_country_map_comes_from_the_finland_file(monkeypatch, tmp_path):
+    from bizradar.sources import osm, osm_extract
+
+    segs = {"hair": {"osm": ["shop=hairdresser"]}}
+    pbf = tmp_path / "finland.osm.pbf"
+    pbf.write_bytes(b"x")
+    el = {"type": "node", "id": 1, "lat": 60.3, "lon": 25.0, "tags": {"shop": "hairdresser", "name": "Salon A"}}
+    scans = []
+    monkeypatch.setattr(osm_extract, "download", lambda p, d: p.exists())
+    monkeypatch.setattr(osm_extract, "scan", lambda p, s: scans.append(1) or [el])
+    monkeypatch.setattr(osm, "_overpass", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no live queries")))
+    cache = tmp_path / "osm.json"
+    r = osm.fetch(None, segs, cache, 6, {"Uusimaa": (59.8, 22.8, 60.8, 26.5)}, pbf)
+    assert [b.name for b in r.items] == ["Salon A"] and "Geofabrik" in r.detail
+    osm.fetch(None, segs, cache, 6, None, pbf)
+    assert len(scans) == 1                              # same file: the earlier scan is reused
+    pbf.unlink()                                        # download failed and no file: last good scan
+    r = osm.fetch(None, segs, cache, 6, None, pbf)
+    assert [b.name for b in r.items] == ["Salon A"] and "download failed" in r.detail

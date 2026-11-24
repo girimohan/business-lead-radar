@@ -29,11 +29,13 @@ def area_spec(cfg: dict, g: geo.Geo) -> tuple[list[str] | None, set[str], set[st
     return query, munis, regions
 
 
-def collect(cfg: dict, root: Path, only: set[str] | None = None, area: list[str] | None = None) -> list[SourceResult]:
+def collect(cfg: dict, root: Path, only: set[str] | None = None, area: list[str] | None = None,
+            tiles: dict | None = None) -> list[SourceResult]:
     segs = cfg["segments"]
     # The OSM cache holds place names, and a sole trader's place may carry the owner's name: keep it private.
     jobs = {"prh": (prh.fetch, (area, segs)), "osm": (osm.fetch, (area, segs, root / "private" / "osm-cache.json",
-                                                 cfg.get("osm_refresh_days", 0)))}
+                                                 cfg.get("osm_refresh_days", 0), tiles,
+                                                 root / "private" / "finland.osm.pbf"))}
     results = []
     with cf.ThreadPoolExecutor(2) as ex:
         futs = {n: ex.submit(fn, *a) for n, (fn, a) in jobs.items() if only is None or n in only}
@@ -65,7 +67,9 @@ def run(cfg: dict, root: Path, today: dt.date | None = None, only: set[str] | No
     query_area, want_munis, want_regions = area_spec(cfg, g)
     say("Collecting: " + (", ".join(query_area) if query_area else "the whole country")
         + f", {len(cfg['segments'])} kinds of business")
-    results = collect(cfg, root, only, query_area)
+    # The map is asked one region at a time (only the chosen regions, if any): whole-country queries time out.
+    tiles = {r: b for r, b in g.region_boxes().items() if not want_regions or r.lower() in want_regions}
+    results = collect(cfg, root, only, query_area, tiles)
     if results and not any(r.ok for r in results):
         raise RuntimeError("every source failed: " + "; ".join(f"{r.name}: {r.error}" for r in results))
     by = {r.name: r.items for r in results}

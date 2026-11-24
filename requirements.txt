@@ -1,3 +1,4 @@
 requests>=2.31
 PyYAML>=6.0
 cryptography>=42
+osmium>=4.0   # reads the OpenStreetMap Finland file

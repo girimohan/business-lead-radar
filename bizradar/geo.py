@@ -110,5 +110,16 @@ class Geo:
     def is_municipality(self, name: str) -> bool:
         return name.strip().lower() in self.by_name
 
+    def region_boxes(self) -> dict[str, tuple[float, float, float, float]]:
+        """Region name -> (south, west, north, east), the box around its municipalities (for map queries)."""
+        out: dict[str, list[float]] = {}
+        for x0, y0, x1, y1, code, _ in self.boxes:
+            r = self.names(code)[1]
+            if not r:
+                continue
+            b = out.setdefault(r, [y0, x0, y1, x1])
+            b[:] = [min(b[0], y0), min(b[1], x0), max(b[2], y1), max(b[3], x1)]
+        return {r: tuple(round(v, 3) for v in b) for r, b in sorted(out.items())}
+
     def is_region(self, name: str) -> bool:
         return name.strip().lower() in {r.lower() for r in self.regions.values()}

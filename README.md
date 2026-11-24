@@ -13,9 +13,9 @@ hr-contact-radar, its output is about people (a toiminimi *is* a person), so onl
 
 | | |
 |---|---|
-| **Dashboard** | Online: `https://girimohan.github.io/business-lead-radar/` (encrypted, asks for your passphrase), rebuilt every morning by GitHub Actions. Locally: `private/dashboard.html`. Businesses ranked by fit; filters by kind of business, **region and municipality**, company form, which product fits and how you may reach them. For each one: why the product fits ("your website has no chat and no online booking"), a channel table (email / phone / visit / letter / form / SMS: allowed or not, and why), a draft for the best allowed channel in Finnish or English, **Open in my email app / Open in Gmail**, a consent recorder and a tracker. |
+| **Dashboard** | Online: `https://girimohan.github.io/business-lead-radar/` (encrypted, asks for your passphrase), rebuilt every Monday morning by GitHub Actions. Locally: `private/dashboard.html`. Businesses ranked by fit; filters by kind of business, **region and municipality**, company form, which product fits and how you may reach them. For each one: why the product fits ("your website has no chat and no online booking"), a channel table (email / phone / visit / letter / form / SMS: allowed or not, and why), a draft for the best allowed channel in Finnish or English, **Open in my email app / Open in Gmail**, a consent recorder and a tracker. |
 | **Email queue** | *Reach by: Email allowed* (or sort *Email allowed first*): every lead you may email today. The dashboard counts the emails you send and warns past `email_daily_limit` (25). |
-| **Daily issue** | A GitHub issue (GitHub emails it to you) with counts only: new leads by kind and region. No names. |
+| **Weekly issue** | A GitHub issue (GitHub emails it to you) with counts only: new leads by kind and region. No names. |
 | **Data** | `private/leads.json` locally. |
 
 Nothing is ever sent for you. You review each draft and send it yourself, one at a time.
@@ -30,8 +30,8 @@ OpenStreetMap (places, incl. toiminimi)             ─┘
 
 1. **Collect.** PRH/YTJ open data API v3: companies by TOL 2025 industry code, for the whole country (business
    ID, company form, address, website; no phone or email; sole traders not included). OpenStreetMap via
-   Overpass: the places themselves, with phone and website where mapped; reused for `osm_refresh_days` (6)
-   to spare the public servers. Chains (anything with a `brand` tag) are skipped.
+   Overpass: the places themselves, with phone and website where mapped, asked one region at a time
+   (a single query for all of Finland times out on the busy public servers); reused for `osm_refresh_days` (6). Chains (anything with a `brand` tag) are skipped.
 2. **Merge.** A place is matched to a company by business ID, website domain, or name + postcode, so it learns
    its business ID and company form. A place with no match is probably a sole trader.
 3. **Region.** Each business gets its municipality and region (maakunta) from its postcode, map point or town
@@ -42,8 +42,8 @@ OpenStreetMap (places, incl. toiminimi)             ─┘
    because those may be emailed): the email, phone and contact form the business publishes there, and what it
    already uses: booking tool, chat, delivery, platform, mobile-friendliness, https, copyright year. Emails are
    kept only if they are on the business's own domain or a free-mail address. Nationwide there are tens of
-   thousands of sites: each run reads `max_sites_per_run` (1,500) new ones, so coverage fills in over the
-   first two weeks of daily runs.
+   thousands of sites: each run reads `max_sites_per_run` (4,000) new ones, within `max_minutes` (75), so coverage fills in over the
+   first few weekly runs.
 6. **Channels** (`bizradar/compliance.py`): see the rules below.
 7. **Score** (`bizradar/score.py`): which products fit, from evidence only. The radar never claims "no
    website" unless the business is a mapped storefront and a search found nothing, and never comments on a
@@ -66,7 +66,7 @@ Email drafts to businesses whose website the radar read end with a P.S. offering
 
 ## Run it online (GitHub Actions + Pages)
 
-The workflow `.github/workflows/daily.yml` runs every morning: tests, collect the whole country, read a batch of
+The workflow `.github/workflows/weekly.yml` runs every Monday morning (and whenever you start it): tests, collect the whole country, read a batch of
 websites, score, encrypt, publish to GitHub Pages, and open an issue with the counts.
 
 1. Set the passphrase (12+ characters; you type it to open the dashboard; keep it in your password manager):
@@ -81,10 +81,10 @@ websites, score, encrypt, publish to GitHub Pages, and open an issue with the co
    gh secret set RADAR_SENDER --repo girimohan/business-lead-radar --body "phone: '+358 ...'"
    ```
 
-3. Start the first run (later runs are automatic): **Actions → Daily business lead radar → Run workflow**, or
+3. Start the first run (later runs are automatic): **Actions → Weekly business lead radar → Run workflow**, or
 
    ```powershell
-   gh workflow run daily.yml --repo girimohan/business-lead-radar
+   gh workflow run weekly.yml --repo girimohan/business-lead-radar
    ```
 
 What is on GitHub: the code, `config.yaml`, the docs, `data/geo.json` (public statistics) and
